@@ -63,7 +63,7 @@ scatterplot(Magnitud.Ml~Latitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots
 
 modelo1 = lm(Magnitud.Ml ~ Longitud + Latitud + I(Longitud * Latitud) + I(Longitud^2) + I(Latitud^2), data = datosdf)
 summary(modelo1)
-step(modelo1)
+summary(step(modelo1))
 
 #Gráficos sobre los residuales del modelo 1
 par(mfrow = c(1, 3))
@@ -75,6 +75,12 @@ title(main=list("Graficos descriptivos M1 Residuales Sismicidad en Antioquia (Es
 
 #Ajuste del modelo seleccionado ### a los residuales 
 modelo2 = lm(Magnitud.Ml ~ Longitud + Latitud + I(Longitud * Latitud) +
+               I(Longitud^2) + I(Latitud^2), data = datosdf)
+anova(modelo2)
+summary(modelo2)
+
+#Ajuste modelo anterior
+modelo2 = lm(Magnitud.Ml ~ Longitud +
                I(Longitud^2) + I(Latitud^2), data = datosdf)
 anova(modelo2)
 summary(modelo2)
@@ -101,12 +107,13 @@ Anova(modelo3)
 ##################################################################
 ############    Modelo a sentimiento  ##############
 ##################################################################
+
 #Ahora, se construye el semivariograma sobre los residuales del modelo ajustado
 datos2=data.frame(Longitud,Latitud,res=modelo2$res)
 
 #Creando objeto de tipo geodata para el calculo del semivariograma
 geo = as.geodata(datos2, coords.col = 1:2, data.col = 3)
-var = variog(geo.nuevo, max.dist = 3,direction = "omnidirectional")
+var = variog(geo, max.dist = 3,direction = "omnidirectional")
 
 #dup.coords(geo)
 #geo.nuevo = jitterDupCoords(geo,max=0.01)
@@ -154,9 +161,11 @@ plot(muestra)
 muestra1=data.frame(muestra)
 names(muestra1) = c("Longitud", "Latitud")
 gridded(muestra1) = c("Longitud", "Latitud")
-#Para cuadricular la muestra generada! porque se ha generado de forma regular
 
-krig_u=krige(formula=Magnitud.Ml ~ 1,geo.nuevo,muestra1,model=mod1_1)
+
+#Para cuadricular la muestra generada! porque se ha generado de forma regular
+krig_u=krige(formula= res ~ 1,geo,muestra1,model=mod1_1)
+
 #kriging universal sobre la precipitación.
 head(krig_u$var1.pred) # Pronosticos
 head(krig_u$var1.var) # Varianza de predicci?n
