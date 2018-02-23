@@ -106,14 +106,18 @@ datos2=data.frame(Longitud,Latitud,res=modelo2$res)
 
 #Creando objeto de tipo geodata para el calculo del semivariograma
 geo = as.geodata(datos2, coords.col = 1:2, data.col = 3)
-dup.coords(geo)
-geo.nuevo = jitterDupCoords(geo,max=0.01)
-dup.coords(geo.nuevo)
-coordinates(geo.nuevo) = ~ Longitud + Latitud
-#variog para estimar semivariograma
-par(mfrow = c(1, 1))
 var = variog(geo.nuevo, max.dist = 3,direction = "omnidirectional")
+
+#dup.coords(geo)
+#geo.nuevo = jitterDupCoords(geo,max=0.01)
+#dup.coords(geo.nuevo)
+#coordinates(geo.nuevo) = ~ Longitud + Latitud
+#variog para estimar semivariograma
+
+par(mfrow = c(1, 1))
 plot(var)
+var = variog(geo,direction = "omnidirectional",width = 1,max.dist=3.5)
+
 
 #Ajuste de modelos al semivariograma
 #Aca se puede "jugar" con varios ajustes
