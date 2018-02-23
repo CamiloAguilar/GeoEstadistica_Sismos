@@ -1,0 +1,15 @@
+name: "my-website"
+navbar:
+  title: "Colsubsidio Proyección Aportes 2018"
+  href: Home.html
+  left:
+    - text: "Geo Estadística"
+      href: Home.html
+output:
+  html_document:
+    theme: cerulean
+    highlight: haddock
+    include:
+      after_body: footer2.html
+    css: styles.css
+    runtime: shiny

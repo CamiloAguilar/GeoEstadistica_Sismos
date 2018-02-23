@@ -2,7 +2,7 @@
 ############ 			Cargue de librerias		##############
 ##################################################################
 
-install.packages("rgeos","sp","maptools","car","geoR","gstat")
+#install.packages("rgeos","sp","maptools","car","geoR","gstat")
 library(rgeos)
 library(sp)
 library(maptools)
@@ -20,17 +20,12 @@ library(dplyr)
 
 #setwd("D:/Documents/MEA/ESTADISTICA ESPACIAL/TALLER/Sismicidad/2017")
 datosdf = read.table("RNSC_Antioquia_2017_2018.txt", sep = "\t", dec = ",", header = T)
-
-## Agrupamos para quitar duplicados
-datosdf <- datosdf %>%
-           group_by(Longitud, Latitud) %>%
-           summarise(Magnitud.Ml=mean(Magnitud.Ml))
+datosdf$periodo <- as.Date(datosdf$Fecha, "%d/%m/%Y")
+datosdf$anio <- format(datosdf$periodo, "%Y")
+datosdf$mes <- format(datosdf$periodo, "%m")
+datosdf <- datosdf %>% filter(mes=="06")
 
 datossp <- datosdf
-
-str(datosdf)
-head(datosdf)
-#attach(datosdf)
 
 #Importación de la capa geográfica a R.
 Antioquia = readShapePoly("./ANTIOQUIA/Antioquia.shp")
@@ -91,29 +86,10 @@ scatterplot(Magnitud.Ml~Latitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots
 modelo1 = lm(Magnitud.Ml ~ Longitud + Latitud + I(Longitud * Latitud) + I(Longitud^2) 
              + I(Latitud^2), data = datosdf)
 anova(modelo1)
-step(modelo1)
+summary(step(modelo1))
 
-#Ajuste del modelo seleccionado anteriormente 
-modelo2 = lm(Magnitud.Ml ~ Longitud + I(Longitud * Latitud) +
-               I(Longitud^2) + I(Latitud^2), data = datosdf)
-anova(modelo2)
-summary(modelo2)
+# ES ESTACIONARIO
 
-
-#Gráficos sobre los residuales del modelo ajustado 2
-par(mfrow = c(1, 3))
-hist(modelo2$ res, freq = FALSE, main = "", xlab = "Residuales", ylab = "Frecuencia")
-curve(dnorm(x, mean(modelo2$res), sd(modelo2$res)), add = T)
-boxplot(modelo2$res)
-qqPlot(modelo2$res, ylab = "Magnitud ML")
-title(main=list("Graficos descriptivos Residuales Sismicidad Diaria en Antioquia 2017-2018 (Escala de Magnitud Local)", cex=2,col="black", font=3), outer=T,line=-2)
-par(mfrow = c(1, 1))
-
-#Modelo de sgundo orden
-modelo3=lm(modelo2$res ~ Longitud + Latitud + I(Longitud * Latitud) + 
-             I(Longitud^2) + I(Latitud^2), data = datosdf)
-summary(modelo3)
-Anova(modelo3)
 
 # Gráficos contra las direcciones para los residuales
 # En los graficos de dispersi?n no se oberva tendencia alguna
@@ -128,30 +104,34 @@ scatterplot(modelo2$res~Latitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots
 #*******************************************************
 
 # Se construye el semivariograma sobre los residuales del modelo ajustado 2
-datos2 <- data.frame(Longitud = datosdf$Longitud, Latitud = datosdf$Latitud, res = modelo2$res)
+datos2 <- data.frame(Longitud = datosdf$Longitud, Latitud = datosdf$Latitud, res = datosdf$Magnitud.Ml)
 
 # Objeto de tipo geodata para el calculo del semivariograma
 geo = as.geodata(datos2, coords.col = 1:2, data.col = 3)
 class(geo)
+dup.coords(geo) # No hay duplicados
 
 # variog para estimar semivariograma
-var = variog(geo, max.dist = 4, direction = "omnidirectional")
+var = variog(geo, max.dist = 1.5, direction = "omnidirectional")
 # semivariograma de los residuos, ya que la Maginitud Local es estacionaria, entonces 
 # removemos la tendencia, aunque la dependencia entre las obsevaciones se evidencia
 # debido al crecimiento presente en el semivariograma, lo que indica que los residuos 
 # tienen estructura de dependencia espacial, es decir, existen rezagos de dependencia   
 # lo que indica un problema a solucionar
 
+plot(var)
+
+
 # Estimación variograma por lat y lon
-var_lat = variog(geo, direction = 90, unit.angle="degre", max.dist = 2.9)
-var_lon = variog(geo, direction = 0, unit.angle="degre", max.dist = 2.9)
+#var_lat = variog(geo, direction = 90, unit.angle="degre", max.dist = 2.9)
+#var_lon = variog(geo, direction = 0, unit.angle="degre", max.dist = 2.9)
 
 # graficamos los semivariogramas
 # Se observa que la variación no depende de la dirección
-plot(var,main="Semivariograma de residuos", xlim=c(0, 3), type="o", ylim=c(0,0.4))
-points(var_lat$u, var_lat$v, col=2, type="o")
-points(var_lon$u, var_lon$v, col=3, type="o")
-legend("bottomright",c("Omnidir","Latitud","Longitud"), col=1:3,pch=1, inset=0.03, box.lwd=0)
+plot(var,main="Semivariograma de residuos", xlim=c(0, 1.7), type="o", ylim=c(0,0.5))
+#points(var_lat$u, var_lat$v, col=2, type="o")
+#points(var_lon$u, var_lon$v, col=3, type="o")
+#legend("bottomright",c("Omnidir","Latitud","Longitud"), col=1:3,pch=1, inset=0.03, box.lwd=0)
 
 #plot(var,main="Semivariograma")
 #plot(var,main="Semivariograma",type="l")
@@ -195,6 +175,9 @@ lines(mod3, max.dist = 3.5, col = 3)
 legend("bottomright",legend = c("MCO", "MCP - npairs", "MCP - cressie"),
        col = 1:5, lwd = 2, inset = .03)
 
+
+# Los modelos MCP - npair y MCP - cressie aparentemente se ajustan más a los datos
+
 ##################################################################
 ############ 			Validación cruzada			##############
 ###########       con kriging ordinario   ##############
@@ -210,7 +193,7 @@ cruzada3=xvalid(geo,model=mod3,reestimate = F)
 sqrt(mean(cruzada1$error^2))
 sqrt(mean(cruzada2$error^2))
 sqrt(mean(cruzada3$error^2))
-# Usar el modelo 1
+# Usar el modelo 3
 
 ### Validaci?n cruzada para la Magnitud Local 
 ### cambiar de geoR a gstat
@@ -218,35 +201,11 @@ sqrt(mean(cruzada3$error^2))
 ### valid cruzada sobre la Nagnitud Local y o residuales 
 
 library(gstat)
-mod1_1 <- as.vgm.variomodel(mod1)
-class(mod1)
+mod1_1 <- as.vgm.variomodel(mod3)
+class(mod3)
 class(mod1_1)
 #mod1 es el modelo en la libreria geoR
 #mod1_1 es el mismo modelo pero de la libreria gstat
-
-## valid cruzada sobre los datos de la Magnitud Local (no residuos)
-kr <- krige.cv(Magnitud.Ml ~ Longitud + I(Longitud * Latitud) +
-                 I(Longitud^2) + I(Latitud^2) , datossp,  mod1_1, maxdist = 3.5)
-head(kr)
-mape=mean(abs(kr$residual)/kr$observed)
-mape
-## error de pronostico es cerca del xxxx% (sale NA)
-
-#Se repite el proceso para los otros modelos candidatos
-mod2_1 <- as.vgm.variomodel(mod2)
-kr <- krige.cv(Magnitud.Ml ~ Longitud + I(Longitud * Latitud) +
-                 I(Longitud^2) + I(Latitud^2) , datossp,  mod2_1, maxdist = 3.5)
-mape=mean(abs(kr$residual)/kr$observed)
-mape
-
-mod3_1 <- as.vgm.variomodel(mod3)
-kr <- krige.cv(Magnitud.Ml ~ Longitud + I(Longitud * Latitud) +
-                 I(Longitud^2) + I(Latitud^2) , datossp,  mod3_1, maxdist = 3.5)
-mape=mean(abs(kr$residual)/kr$observed)
-mape
-###### Mejor modelo es el xxxx.
-
-
 
 ##################################################################
 ############ 			Kriging universal			##############
@@ -265,20 +224,23 @@ gridded(muestra1) = c("Longitud", "Latitud")
 #Para cuadricular la muestra generada, porque se ha generado de forma regular
 
 #Kri universal, la dif es la expresion para la media del modelo
-krig_u=krige(formula=Magnitud.Ml ~ Longitud + I(Longitud * Latitud) +
-               I(Longitud^2) + I(Latitud^2), datossp,muestra1,model=mod1_1)
+
+krig_u <- krige(Magnitud.Ml ~ Longitud + I(Longitud * Latitud) +
+              I(Longitud^2) + I(Latitud^2), datossp, muestra1, model = mod1_1)
+head(krig_u)
+
 
 #kriging universal sobre la Magitud Local.
-#head(krig_u$var1.pred)
-#head(krig_u$var1.var)
+head(krig_u$var1.pred)
+head(krig_u$var1.var)
 
 #Mapa para la Magnitud Local
-#spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", 
-       #contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
+spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", 
+       contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
 
 #Con algunas opciones distintas
-#spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", contour = FALSE, labels = FALSE, pretty = F, col = "black", col.regions = terrain.colors(100))
-#spplot(krig_u, c("var1.var"), main = "Mapa para las varianzas de predicción", contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
+spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", contour = FALSE, labels = FALSE, pretty = F, col = "black", col.regions = terrain.colors(100))
+spplot(krig_u, c("var1.var"), main = "Mapa para las varianzas de predicción", contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
 #mapa para las varaiznas de predicci?n 
 
 #Para visualizar los puntos de las estaciones
