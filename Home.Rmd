@@ -1,9 +1,9 @@
 ---
-title: "Geo Estadística  - Proyección Magnitud de Sismos para Antioquia"
+title: "Geo Estadística  - Proyección Magnitud de Sismos para Antioquia en 2018"
 output: html_document
 ---
-### Magnitud Sismica para Antiquia (Escala de richter)
-#### Febrero de 2018
+#### Magnitud Sismica para Antiquia
+##### Febrero de 2018
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
@@ -14,265 +14,132 @@ writeLines(c(msj,"<p>Copyright &copy; All rights reserved.</p>"),fileConn)
 close(fileConn)
 ```
 
-El objetivo del estudio es estimar y predecir la actividad sismica de la magnitud local en la escala de Richter. Los puntos y rangos donde puede haber movimientos sismicos dependiendo de la escala de medición. 
 
-Se utilizó un análisis geoestadítico por medio de 3 métodos $Kriging Universal$, $Kriging Ordinario$ y $Inverso de la distancia$. El método con mejor ajuste es el $Kriging Universal$ porque la varianza no genera islas en el mapa y es menor a los anteriores métodos. Para esto se utilizó la siguiente metodología:
+### Descripción de los datos
 
-- Se observaron descriptivamente los datos.
-- Se comprobo estacionariedad. La magnitud local en escala de Richter presenta estacionariedad en los datos y no fue necesario modelar tendencia. La media es constante sobre la región de observación.
-- Se modelo la dependencia espacial de la varianza por medio de un modelo exponencial y con los parámetros de pepita, semita y rango, expuestos en el estudio.
-- Se utilizó validación cruzada para determinar el mejor modelo de la varianza. Un modelo de mínimos cuadrados generalizados.
-- Se realizó interpolación por tres métodos, tomando el mejor ajuste $Kriging Universal$ .
+Las sigueintes gráficas muestran el histótico de los Aportes, Empresas y Trabajadores Afiliados desde el año 2003 hasta 2017.
+Los valores mostrados para el año 2018 son los esperados.
 
-Las conclusiones del estudio son:
+```{r Reserva, echo=FALSE, message=FALSE, warning=FALSE, fig.width = 8.5, fig.height = 3}
+#load("./.RData")
+library(dplyr)
+library(dygraphs)
+library(lubridate)
+library(readxl)
 
-- La zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad.
-- Las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca) se encuentran al occidente del departamento.
+AportesFin <- read_excel("aportes.xlsx", sheet = "Histórico")
+datesup<-as.Date("2018-12-31")
+dateinf<-as.Date("2013-12-31")
+dateWindow <- c(dateinf, datesup)
 
-## Descripción de los datos
+AportesAnio <- ts((AportesFin[,3]), frequency=12, start=c(2003,1))
+dygraphs::dygraph(AportesAnio, main = "\n\n Aportes. Histórico 2003-2017 (Los valores de 2018 son esperados)", group = "Aportes") %>% 
+  dyRangeSelector(dateWindow = dateWindow) %>% 
+  dyOptions(fillGraph = TRUE, fillAlpha = 0.5, colors="cadetblue") %>%
+  dyAxis("x", drawGrid = FALSE, label="Aportes Mensual \n\n") %>%
+  dyAxis("y", label = "Valor Aportes (Millones)")                  
 
-La información utilizada en el siguiente documento se toma de Red Sismológica Nacional de Colombia <http://200.119.88.135/RSNC/>, especificamente del BOLETÍN PRELIMINAR DE EVENTO SÍSMICO. Los datos usados son para el departamento de Antioquia, toda la actividad sismica en Junio de 2017.
+EmpresasAfi <- ts((AportesFin[,4]), frequency=12, start=c(2003,1))
+dygraphs::dygraph(EmpresasAfi, main = "\n\n Empresas Afiliadas. Histórico 2003-2017 (Los valores de 2018 son esperados)", group = "Empresas") %>% 
+  dyRangeSelector(dateWindow = dateWindow) %>% 
+  dyOptions(fillGraph = TRUE, fillAlpha = 0.5, colors="dodgerblue") %>%
+  dyAxis("x", drawGrid = FALSE, label="Empresas Afiliadas Mensual \n\n") %>%
+  dyAxis("y", label = "Número de Empresas Afiliadas")                  
 
-```{r datos, echo=F, message=FALSE, warning=FALSE}
+TrabajadoresAfi <- ts((AportesFin[,5]), frequency=12, start=c(2003,1))
+dygraphs::dygraph(TrabajadoresAfi, main = "\n\n Trabajadores Afiliados. Histórico 2003-2017 (Los valores de 2018 son esperados)", group = "Aportes") %>% 
+  dyRangeSelector(dateWindow = dateWindow) %>% 
+  dyOptions(fillGraph = TRUE, fillAlpha = 0.5, colors="dodgerblue") %>%
+  dyAxis("x", drawGrid = FALSE, label="Trabajadores Afiliados Mensual \n\n") %>%
+  dyAxis("y", label = "Npumero de Trabajadores Afiliados")                  
+
+
+```
+
+
+### Proyección 2018 mensual
+
+A continuación se meustran los valores esperados para el año 2018 por meses de Aportes (cifras en millones de pesos Colombianos), Número de Empresas y Número de Trabajadores Afiliados.
+
+```{r proyeccion, echo=F, message=FALSE, warning=FALSE}
 load("./.RData")
 library(knitr)
 library(kableExtra)
-library(rgeos)
-library(sp)
-library(maptools)
-library(car)
-library(geoR)
-library(gstat)
-library(gdata)
-library(readxl)
-library(dplyr)
 
-kable(head(datosdf[,2:6]), "html") %>%
+Aportes_2018 <- AportesFin %>% filter(Anio==2018)
+kable(Aportes_2018, "html") %>%
   kable_styling("striped", full_width = F, position = "center") %>%
-  add_footnote(c("Actividad Sismica escala de Richter"), notation = "number")
-
+  add_footnote(c("Cifras de los Aportes en millones de Pesos colombianos"), notation = "number")
 ```
 
-A continuación se muestran una descripción de los datos, aparentemente los datos no se diferencian mucho de una distribución normal.
+### Distribución de las empresas
 
-```{r explorer, echo=T, message=FALSE, warning=FALSE}
+A continuación se observa la distribución de las empresas por zona georreferenciada de acuerdo a la segmentación empresarial.
 
-par(mfrow = c(1, 3))
-hist(datosdf$Magnitud.Ml, freq = FALSE, main = "", xlab = "Magnitud.Ml", ylab = "Frecuencia")
-curve(dnorm(x, mean(datosdf$Magnitud.Ml), sd(datosdf$Magnitud.Ml)), add = T)
-boxplot(datosdf$Magnitud.Ml)
-qqPlot(datosdf$Magnitud.Ml, ylab = "Magnitud Local")
-title(main=list("Gráficos descriptivos Sismicidad (Escala de Magnitud Local)",cex=2,col="black", font=3), outer=T,line=-2)
-
-
-```
-
-
-A continuación se muestra un mapa espacial de la actividad sismica en el departamento. La zona occidental muestra una mayor actividad, en la zona centro la actividad es casi nula. La magnitud más fue de 3.5 en la escala de Ricther
 
 ```{r georrefe, echo=F, message=FALSE, warning=FALSE}
 
 library(leaflet)
 
-
 pal <- colorNumeric(
-  palette = "Reds",
-  domain = datosdf$Magnitud.Ml
+  palette = "Spectral",
+  domain = BD_2017$Aportes_total
 )
 
-map <- leaflet(data=datosdf) %>%
-  addCircleMarkers(lng =~Longitud, lat =~Latitud, radius = ~ sqrt(10),
-    stroke = FALSE, fillOpacity = 0.5, label = ~as.character(paste(Municipio, Magnitud.Ml)), 
-    color = ~pal(Magnitud.Ml)) %>%
-  addLegend("bottomright", pal = pal, values = ~Magnitud.Ml,
-    title = "Magnitud Escala Richter",
+map <- leaflet(data=BD_2017) %>%
+  addCircleMarkers(lng =~X, lat =~Y, popup = ~as.character(Piramide.2_Actual), radius = ~ sqrt(10),
+    stroke = FALSE, fillOpacity = 0.5, label = ~as.character(paste(Piramide.2_Actual, RazonSocial)), 
+    color = ~pal(Aportes_total)) %>%
+  addLegend("bottomright", pal = pal, values = ~Aportes_total,
+    title = "Aportes",
+    labFormat = labelFormat(prefix = "$"),
     opacity = 1
-  ) 
+  )
 
-map %>% addProviderTiles(providers$OpenStreetMap) %>% addPolygons(data=Antioquia, fill = F, stroke = T, color = "#03F", group = "study area")
+map %>% addProviderTiles(providers$OpenStreetMap)
 
 
 ```
 
 
-## Análisis de Estacionariedad
 
-Se realizan los gráficos de la variable Magnitud en escala de Richter contra las direcciones. Se observan con cierta estacionariedad y sin tendencia significativa. Claramente se observa en los gráficos que la media de la maginitud local es constante sobre la región de observación no es necesario remover esta dependencia.
 
-```{r explorer2, echo=T, message=FALSE, warning=FALSE}
 
-scatterplot(Magnitud.Ml~Longitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots=FALSE, span=0.5, data=datosdf)
-scatterplot(Magnitud.Ml~Latitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots=FALSE, span=0.5, data=datosdf)
+### Estimación Aportes por Zonas para 2018
+
+A continuación se muestra la estimación para 2018 de los aportes. 
+
+- El color azul más oscuro representa la concentración de los mayores aportes esperados para 2018, es decir, en las zonas de Bogotá más azul oscura se espera una mayor participación de los aportes.
+- Los Centros de Servicios son los puntos color Rojo.
+- Las Empresas son son los puntos color verde.
+
+```{r estima, echo=F, message=FALSE, warning=FALSE, fig.width=7, fig.height=7}
+source("fun.R")
+load.lib("dplyr", "scales", "tidyr", "plotly", "rgeos", "sp", "maptools", "car", "geoR", "dygraphs", 
+         "gstat", "stringr", "reshape2", "rgeos","sp","maptools","car","geoR","gstat","RColorBrewer","readxl")
+
+my.palette <- brewer.pal(n = 8, name = "Blues")
+par(mfrow=c(2,2))
+spplot(thiessen, c("var1.pred"), main = "Pronóstico de los Aportes para 2018", 
+       contour = T, labels = F, pretty = TRUE, col.regions = my.palette, cuts = 6, col = "transparent")
+spplot(thiessen, c("var1.pred"), main = "Pronóstico de los Aportes para 2018 - Centro de Servicios", sp.layout = list(pts.c),
+       contour = T, labels = F, pretty = TRUE, col.regions = my.palette, cuts = 6, col = "transparent")
+spplot(thiessen, c("var1.pred"), main = "Pronóstico de los Aportes para 2018 - Empresas", sp.layout = list(pts.s),
+       contour = T, labels = F, pretty = TRUE, col.regions = my.palette, cuts = 6, col = "transparent")
+spplot(thiessen, c("var1.pred"), main = "Pronósico de los Aportes - Empresas y Centros Servicio", sp.layout = list(pts.s, pts.c),
+       contour = T, labels = F, pretty = TRUE, col.regions = my.palette, cuts = 6, col = "transparent")
+
 
 ```
 
-A continuación se ajusta un modelo de la Magnitud Local en función de la Lat y Long. Se modela en términos de las direcciones y se utilizó un modelo cuadrático en las direcciones con un stepwise. Como se observa la magnitud no depende de las coordenadas y el proceso es estacionario.
-
-```{r esta, echo=T, message=FALSE, warning=FALSE}
-
-modelo1 = lm(Magnitud.Ml ~ Longitud + Latitud + I(Longitud * Latitud) + I(Longitud^2) 
-             + I(Latitud^2), data = datosdf)
-summary(step(modelo1))
-
-```
-
-## Análisis de sentimiento
-
-El semivariogra se realiza utilizando las coordenadas y la magnitud. Se convierte en geodata y se revisan que no existen coordenadas suplicadas. 
-
-Se realiza semivariograma de la magnitud local, como se evidencio anteriormente es estacionaria, no hay tendencia, aunque la dependencia entre las obsevaciones se evidencia debido al crecimiento presente en el semivariograma, lo que indica que la magnitud tienen estructura de dependencia espacial, es decir, existen rezagos de dependencia lo que indica un problema a solucionar.
-
-```{r esta2, echo=T, message=FALSE, warning=FALSE}
-
-datos2 <- data.frame(Longitud = datosdf$Longitud, Latitud = datosdf$Latitud, res = datosdf$Magnitud.Ml)
-geo = as.geodata(datos2, coords.col = 1:2, data.col = 3)
-class(geo)
-dup.coords(geo) # No hay duplicados
-var = variog(geo, max.dist = 1.5, direction = "omnidirectional")
-plot(var,main="Semivariograma de residuos", xlim=c(0, 1.7), type="o", ylim=c(0,0.5))
-```
-
-Se utiliza un modelo exponencial con las siguientes caracteristicas de pepita, rango y meseta.
-
-```{r esta3, echo=T, message=FALSE, warning=FALSE}
-ev
-```
-
-Se ajutan 3 modelos con las caracteristicas anteriores:
-
-- mod1 -> Valores iniciales. $equal$.
-- mod2 -> Mínimos Cuadrados Ponderados. $npairs$.
-- mod3 -> Mínimos Cuadrados Ponderados. $cressie$.
-
-```{r esta4, echo=T, message=FALSE, warning=FALSE}
-#Asignando valores iniciales
-mod1 <- variofit(var,ini=ev,weights="equal")
-
-#Minimos cuadrados ponderados
-mod2 <- variofit(var,ini=ev,weights="npairs")
-
-#Minimos cuadrados ponderados
-mod3 <- variofit(var,ini=ev,weights="cressie")
-
-```
-
-La siguiente gráfica muestra el ajuste de los modelos especificados anteriormente por exponencial.
-
-```{r esta5, echo=T, message=FALSE, warning=FALSE}
-plot(var)
-lines(mod1, max.dist = 3.5, col = 1)
-lines(mod2, max.dist = 3.5, col = 2)
-lines(mod3, max.dist = 3.5, col = 3)
-
-legend("bottomright",legend = c("MCO", "MCP - npairs", "MCP - cressie"),
-       col = 1:5, lwd = 2, inset = .03)
-
-```
-
-## Validación Cruzada
-
-Se realiza una validación cruzada de los modelos descritos y se escoge el modelo 3. Como el modelo de mejor ajustew.
-
-```{r esta6, echo=T, message=FALSE, warning=FALSE}
-sqrt(mean(cruzada1$error^2))
-sqrt(mean(cruzada2$error^2))
-sqrt(mean(cruzada3$error^2))
-```
-
-```{r esta7, echo=F, message=FALSE, warning=FALSE}
-mod1_1 <- as.vgm.variomodel(mod3)
-```
 
 
-## Interpolación
+### Conclusión
 
-Se toman $10,000$ puntos dentro del poligono del departamento de antioquia para realizar la interpolación.
+Para las siguientes zonas se podría estudiar la factibilidad de instalar Centros de Servicios.
 
-```{r esta8, echo=F, message=FALSE, warning=FALSE}
-plot(muestra, main="Puntos para Interpolación")
-```
-
-### Kriging Universal 
-
-Se utiliza el método de $Krigign Universal$ para predecir dentro del territorio de Antioquia las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca). Tomando una función cuadratica de las distancias.
-
-```{r esta9, echo=T, message=FALSE, warning=FALSE}
-krig_u <- krige(Magnitud.Ml ~ Longitud + I(Longitud * Latitud) + I(Longitud^2) + I(Latitud^2), datossp, muestra1, model = mod1_1)
-
-```
-
-Como se peude observar la varianza no es muy alto y no presenta islas, la zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad.
-
-```{r esta10, echo=T, message=FALSE, warning=FALSE}
-spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", contour = FALSE, labels = FALSE, pretty = F, col = "black", col.regions = terrain.colors(100))
-spplot(krig_u, c("var1.var"), main = "Mapa para las varianzas de Magnitud Local", contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-li = list("sp.polygons", Antioquia)
-pts = list("sp.points", datossp, pch = 3, col = "black", cex = 0.2)
-spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", sp.layout = list(li, pts), contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-```
-
-### Kriging ordinario 
-
-Se utiliza el método de $Krigign Ordinario$ para predecir dentro del territorio de Antioquia las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca). Tomando solamente la magnitud como medición.
-
-```{r esta11, echo=T, message=FALSE, warning=FALSE}
-krig_ord <- krige(Magnitud.Ml ~ 1, datossp, muestra1, model = mod1_1)
-
-```
-
-Como se peude observar la varianza es muy alta y presenta islas, la zona sur oriental de departamento presenta una mayor varianza.
-
-```{r esta12, echo=T, message=FALSE, warning=FALSE}
-spplot(krig_ord, c("var1.pred"), main = "Kriging Ordinario para la Magnitud Local", contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-spplot(krig_ord, c("var1.pred"), main = "Kriging Ordinario para la Magnitud Local", contour = FALSE, labels = FALSE, pretty = F, col = "black", col.regions = terrain.colors(100))
-spplot(krig_ord, c("var1.var"), main = "Mapa para las varianzas de Magnitud Local", contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-li = list("sp.polygons", Antioquia)
-pts = list("sp.points", datossp, pch = 3, col = "black", cex = 0.2)
-spplot(krig_ord, c("var1.pred"), main = "Kriging Ordinario para la Magnitud Local", sp.layout = list(li, pts), contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-```
-
-
-### No-geoestadístico thiessen
-
-Se utiliza el método de $Polígonos de Thiessen$ por medio de la inversa de la distancia. Este método asume cambios abruptos de bordes. Solo utiliza un punto para cada predicción.
-
-```{r esta13, echo=T, message=FALSE, warning=FALSE}
-thiessen = krige(Magnitud.Ml ~ 1, datossp, muestra1, nmax = 4)
-```
-
-Como se peude observar la varianza es muy alta y presenta islas, la zona sur oriental de departamento presenta una mayor varianza.
-
-```{r esta14, echo=T, message=FALSE, warning=FALSE}
-spplot(thiessen, c("var1.pred"), main = "thiessen para la Magnitud Local", contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-spplot(thiessen, c("var1.pred"), main = "thiessen para la Magnitud Local", contour = FALSE, labels = FALSE, pretty = F, col = "black", col.regions = terrain.colors(100))
-li = list("sp.polygons", Antioquia)
-pts = list("sp.points", datossp, pch = 3, col = "black", cex = 0.2)
-spplot(thiessen, c("var1.pred"), main = "thiessen para la Magnitud Local", sp.layout = list(li, pts), contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
-```
-
-
-### Conclusiones
-
-El objetivo del estudio es estimar y predecir la actividad sismica de la magnitud local en la escala de Richter. Los puntos y rangos donde puede haber movimientos sismicos dependiendo de la escala de medición. 
-
-Se utilizó un análisis geoestadítico por medio de 3 métodos $Kriging Universal$, $Kriging Ordinario$ y $Inverso de la distancia$. El método con mejor ajuste es el $Kriging Universal$ porque la varianza no genera islas en el mapa y es menor a los anteriores métodos. Para esto se utilizó la siguiente metodología:
-
-- Se observaron descriptivamente los datos.
-- Se comprobo estacionariedad. La magnitud local en escala de Richter presenta estacionariedad en los datos y no fue necesario modelar tendencia. La media es constante sobre la región de observación.
-- Se modelo la dependencia espacial de la varianza por medio de un modelo exponencial y con los parámetros de pepita, semita y rango, expuestos en el estudio.
-- Se utilizó validación cruzada para determinar el mejor modelo de la varianza. Un modelo de mínimos cuadrados generalizados.
-- Se realizó interpolación por tres métodos, tomando el mejor ajuste $Kriging Universal$ .
-
-Las conclusiones del estudio son:
-
-- La zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad.
-- Las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca) se encuentran al occidente del departamento.
-
-
-
-
-
-
-
+- La zona norte hacia las afueras de la ciudad por el oriente tiene y se estima una mayor participación de los aportes.
+- La zona nororiental hacia el centro de la ciudad se estima un una mayor participación de los aportes.
+- La zona sur occidental hacia Soacha tiene una estimación importante de los aportes.
+- Zonas hacia el sur no tienen una estimación de los aportes significativa, con excepción de una empresa en la zona suroriental que cuenta con un aporte alto. Pocas empresas se encuentran ubicadas en estas zonas. 
 
