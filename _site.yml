@@ -1,16 +1,20 @@
 name: "my-website"
 navbar:
-  title: "Geoestadística Febrero 2018"
+  title: "Geoestadística"
   href: Home.html
   left:
-    - text: "Geo Estadística"
+    - text: "Home"
       href: Home.html
 output:
   html_document:
-    theme: cerulean
+    theme: united
     highlight: haddock
     include:
       after_body: footer2.html
-      in_header: logo.html
+#      in_header: logo.html
     css: styles.css
     runtime: shiny
+    toc: yes
+    toc_float:
+      collapsed: true
+      smooth_scroll: false

@@ -2,8 +2,15 @@
 title: "Geo Estadística  - Proyección Magnitud de Sismos para Antioquia"
 output: html_document
 ---
-### Magnitud Sismica para Antiquia (Escala de richter)
+
+
+### Magnitud Sísmica para Antioquia (Escala de richter)
 #### Febrero de 2018
+##### Realizado por:
+
+- **Nestor Jardany Serrano Rojas** <https://github.com/jardanys/GeoEstadistica_Sismos>
+- **Camilo Alejandro Aguilar Laverde** <https://github.com/CamiloAguilar/Estadistica_Espacial>
+- **Alvaro Enrique Villaba Mendez** <alvarovillalba@usantotomas.edu.co>
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
@@ -14,9 +21,9 @@ writeLines(c(msj,"<p>Copyright &copy; All rights reserved.</p>"),fileConn)
 close(fileConn)
 ```
 
-El objetivo del estudio es estimar y predecir la actividad sismica de la magnitud local en la escala de Richter. Los puntos y rangos donde puede haber movimientos sismicos dependiendo de la escala de medición. 
+El objetivo del estudio es estimar y predecir la actividad sísmica de la magnitud local en la escala de Richter. Los  rangos espaciales donde puede haber movimientos sismicos dependiendo de la escala de medición. 
 
-Se utilizó un análisis geoestadítico por medio de 3 métodos $Kriging Universal$, $Kriging Ordinario$ y $Inverso de la distancia$. El método con mejor ajuste es el $Kriging Universal$ porque la varianza no genera islas en el mapa y es menor a los anteriores métodos. Para esto se utilizó la siguiente metodología:
+Se utilizó un análisis geoestadítico por medio de 3 métodos **Kriging Universal**, **Kriging Ordinario** y **Inverso de la distancia**. El método con mejor ajuste es el Kriging Universal porque la varianza no genera islas en el mapa y es menor a los anteriores métodos. Para esto se utilizó la siguiente metodología:
 
 - Se observaron descriptivamente los datos.
 - Se comprobo estacionariedad. La magnitud local en escala de Richter presenta estacionariedad en los datos y no fue necesario modelar tendencia. La media es constante sobre la región de observación.
@@ -28,10 +35,11 @@ Las conclusiones del estudio son:
 
 - La zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad.
 - Las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca) se encuentran al occidente del departamento.
+- La varianza no es muy alta y no presenta islas, la zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad. La varianza no es muy alta mayor parte del territorio Antioqueño.
 
 ## Descripción de los datos
 
-La información utilizada en el siguiente documento se toma de Red Sismológica Nacional de Colombia <http://200.119.88.135/RSNC/>, especificamente del BOLETÍN PRELIMINAR DE EVENTO SÍSMICO. Los datos usados son para el departamento de Antioquia, toda la actividad sismica en Junio de 2017.
+La información utilizada en el siguiente documento se toma de Red Sismológica Nacional de Colombia <http://200.119.88.135/RSNC/>, especificamente del BOLETÍN PRELIMINAR DE EVENTO SÍSMICO. Los datos usados son para el departamento de Antioquia, toda la actividad sismica en Junio de 2017. (123 observaciones, en la siguiente tabla se observan las primeras 6 observaciones).
 
 ```{r datos, echo=F, message=FALSE, warning=FALSE}
 load("./.RData")
@@ -53,7 +61,7 @@ kable(head(datosdf[,2:6]), "html") %>%
 
 ```
 
-A continuación se muestran una descripción de los datos, aparentemente los datos no se diferencian mucho de una distribución normal.
+A continuación se muestran una descripción de los datos, aparentemente los datos no se diferencian mucho de una distribución normal y se decide continuar sin transformar los archivos. Si se desea normalizar los datos se pueden transformar con alguna función matemática.
 
 ```{r explorer, echo=T, message=FALSE, warning=FALSE}
 
@@ -68,7 +76,7 @@ title(main=list("Gráficos descriptivos Sismicidad (Escala de Magnitud Local)",c
 ```
 
 
-A continuación se muestra un mapa espacial de la actividad sismica en el departamento. La zona occidental muestra una mayor actividad, en la zona centro la actividad es casi nula. La magnitud más fue de 3.5 en la escala de Ricther
+El siguiente mapa espacial muestra la actividad sismica en el departamento de Antioquia, Colombia. La zona occidental muestra una mayor actividad, en la zona centro la actividad es casi nula. La magnitud más fuerte es de 3.5 en la escala de Ricther en el mes de Junio de 2017.
 
 ```{r georrefe, echo=F, message=FALSE, warning=FALSE}
 
@@ -97,7 +105,7 @@ map %>% addProviderTiles(providers$OpenStreetMap) %>% addPolygons(data=Antioquia
 
 ## Análisis de Estacionariedad
 
-Se realizan los gráficos de la variable Magnitud en escala de Richter contra las direcciones. Se observan con cierta estacionariedad y sin tendencia significativa. Claramente se observa en los gráficos que la media de la maginitud local es constante sobre la región de observación no es necesario remover esta dependencia.
+Se realizan los gráficos de la variable **Magnitud en escala de Richter** contra las direcciones (Longitud, Latitud). Se observan con cierta estacionariedad y sin tendencia significativa. En los gráficos la media de la maginitud local es constante sobre la región de observación, por tanto no es necesario remover esta dependencia.
 
 ```{r explorer2, echo=T, message=FALSE, warning=FALSE}
 
@@ -109,16 +117,16 @@ scatterplot(Magnitud.Ml~Latitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots
 A continuación se ajusta un modelo de la Magnitud Local en función de la Lat y Long. Se modela en términos de las direcciones y se utilizó un modelo cuadrático en las direcciones con un stepwise. Como se observa la magnitud no depende de las coordenadas y el proceso es estacionario.
 
 ```{r esta, echo=T, message=FALSE, warning=FALSE}
-
 modelo1 = lm(Magnitud.Ml ~ Longitud + Latitud + I(Longitud * Latitud) + I(Longitud^2) 
              + I(Latitud^2), data = datosdf)
-summary(step(modelo1))
-
+summary(modelo1)
+# step(modelo1)
 ```
+
 
 ## Análisis de sentimiento
 
-El semivariogra se realiza utilizando las coordenadas y la magnitud. Se convierte en geodata y se revisan que no existen coordenadas suplicadas. 
+El semivariogra se realiza utilizando las coordenadas y la magnitud. Se convierte en geodata y se revisan que no existen coordenadas duplicadas. 
 
 Se realiza semivariograma de la magnitud local, como se evidencio anteriormente es estacionaria, no hay tendencia, aunque la dependencia entre las obsevaciones se evidencia debido al crecimiento presente en el semivariograma, lo que indica que la magnitud tienen estructura de dependencia espacial, es decir, existen rezagos de dependencia lo que indica un problema a solucionar.
 
@@ -128,7 +136,7 @@ datos2 <- data.frame(Longitud = datosdf$Longitud, Latitud = datosdf$Latitud, res
 geo = as.geodata(datos2, coords.col = 1:2, data.col = 3)
 class(geo)
 dup.coords(geo) # No hay duplicados
-var = variog(geo, max.dist = 1.5, direction = "omnidirectional")
+var <- variog(geo, max.dist = 1.5, direction = "omnidirectional")
 plot(var,main="Semivariograma de residuos", xlim=c(0, 1.7), type="o", ylim=c(0,0.5))
 ```
 
@@ -140,9 +148,9 @@ ev
 
 Se ajutan 3 modelos con las caracteristicas anteriores:
 
-- mod1 -> Valores iniciales. $equal$.
-- mod2 -> Mínimos Cuadrados Ponderados. $npairs$.
-- mod3 -> Mínimos Cuadrados Ponderados. $cressie$.
+- mod1 -> Valores iniciales. **equal**.
+- mod2 -> Mínimos Cuadrados Ponderados. **npairs**.
+- mod3 -> Mínimos Cuadrados Ponderados. **cressie**.
 
 ```{r esta4, echo=T, message=FALSE, warning=FALSE}
 #Asignando valores iniciales
@@ -156,7 +164,7 @@ mod3 <- variofit(var,ini=ev,weights="cressie")
 
 ```
 
-La siguiente gráfica muestra el ajuste de los modelos especificados anteriormente por exponencial.
+La siguiente gráfica muestra el ajuste de los modelos especificados anteriormente por función exponencial.
 
 ```{r esta5, echo=T, message=FALSE, warning=FALSE}
 plot(var)
@@ -171,7 +179,7 @@ legend("bottomright",legend = c("MCO", "MCP - npairs", "MCP - cressie"),
 
 ## Validación Cruzada
 
-Se realiza una validación cruzada de los modelos descritos y se escoge el modelo 3. Como el modelo de mejor ajustew.
+Se realiza una validación cruzada de los modelos descritos y se escoge el modelo 3. Como el modelo de mejor ajuste.
 
 ```{r esta6, echo=T, message=FALSE, warning=FALSE}
 sqrt(mean(cruzada1$error^2))
@@ -186,7 +194,7 @@ mod1_1 <- as.vgm.variomodel(mod3)
 
 ## Interpolación
 
-Se toman $10,000$ puntos dentro del poligono del departamento de antioquia para realizar la interpolación.
+Se toman **10,000** puntos dentro del poligono del departamento de antioquia para realizar la interpolación.
 
 ```{r esta8, echo=F, message=FALSE, warning=FALSE}
 plot(muestra, main="Puntos para Interpolación")
@@ -194,14 +202,19 @@ plot(muestra, main="Puntos para Interpolación")
 
 ### Kriging Universal 
 
-Se utiliza el método de $Krigign Universal$ para predecir dentro del territorio de Antioquia las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca). Tomando una función cuadratica de las distancias.
+Se utiliza el método de **Krigign Universal** para predecir dentro del territorio de Antioquia las zonas con mayor posibilidad sísmita de acuerdo a la magnitud en la escala de Richter **actividad sísmitca**. Tomando una función cuadratica de las distancias.
 
 ```{r esta9, echo=T, message=FALSE, warning=FALSE}
 krig_u <- krige(Magnitud.Ml ~ Longitud + I(Longitud * Latitud) + I(Longitud^2) + I(Latitud^2), datossp, muestra1, model = mod1_1)
 
 ```
 
-Como se peude observar la varianza no es muy alto y no presenta islas, la zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad.
+Como se puede observar en las sigueintes graficas:
+
+- Kriging Universal para la Magnitud Local
+- Mapa para las varianzas de Magnitud Local
+
+La varianza no es muy alta y no presenta islas, la zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad. La varianza no es muy alta mayor parte del territorio Antioqueño.
 
 ```{r esta10, echo=T, message=FALSE, warning=FALSE}
 spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
@@ -214,14 +227,18 @@ spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local"
 
 ### Kriging ordinario 
 
-Se utiliza el método de $Krigign Ordinario$ para predecir dentro del territorio de Antioquia las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca). Tomando solamente la magnitud como medición.
+Se utiliza el método de **Krigign Ordinario**, modelando solo con la magnitud para predecir dentro del territorio de Antioquia. Las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca) es sur oriental, se observa diferencias respecto al **Kriging Universal**, para **Kriging Ordinario** toda la zona occidental del departamento presentaría alta posibilidad de sismos con mayor magnitud. 
 
 ```{r esta11, echo=T, message=FALSE, warning=FALSE}
 krig_ord <- krige(Magnitud.Ml ~ 1, datossp, muestra1, model = mod1_1)
-
 ```
 
-Como se peude observar la varianza es muy alta y presenta islas, la zona sur oriental de departamento presenta una mayor varianza.
+Como se puede observar en las sigueintes graficas:
+
+- Kriging Ordinario para la Magnitud Local
+- Mapa para las varianzas de Magnitud Local
+
+La varianza es alto y presenta islas, la zona occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona oriental es la de menor actividad. La varianza es muy alta para la zona occidental y centro del departamento.
 
 ```{r esta12, echo=T, message=FALSE, warning=FALSE}
 spplot(krig_ord, c("var1.pred"), main = "Kriging Ordinario para la Magnitud Local", contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
@@ -252,20 +269,17 @@ spplot(thiessen, c("var1.pred"), main = "thiessen para la Magnitud Local", sp.la
 ```
 
 
-### Conclusiones
+## Conclusiones
 
 El objetivo del estudio es estimar y predecir la actividad sismica de la magnitud local en la escala de Richter. Los puntos y rangos donde puede haber movimientos sismicos dependiendo de la escala de medición. 
 
-Se utilizó un análisis geoestadítico por medio de 3 métodos $Kriging Universal$, $Kriging Ordinario$ y $Inverso de la distancia$. El método con mejor ajuste es el $Kriging Universal$ porque la varianza no genera islas en el mapa y es menor a los anteriores métodos. Para esto se utilizó la siguiente metodología:
+Se utilizó un análisis geoestadítico por medio de 3 métodos **Kriging Universal**, **Kriging Ordinario** y **Inverso de la distancia**. El método con mejor ajuste es el **Kriging Universal** porque la varianza no genera islas en el mapa y es menor a los anteriores métodos. Para esto se utilizó la siguiente metodología:
 
 - Se observaron descriptivamente los datos.
 - Se comprobo estacionariedad. La magnitud local en escala de Richter presenta estacionariedad en los datos y no fue necesario modelar tendencia. La media es constante sobre la región de observación.
 - Se modelo la dependencia espacial de la varianza por medio de un modelo exponencial y con los parámetros de pepita, semita y rango, expuestos en el estudio.
 - Se utilizó validación cruzada para determinar el mejor modelo de la varianza. Un modelo de mínimos cuadrados generalizados.
-- Se realizó interpolación por tres métodos, tomando el mejor ajuste $Kriging Universal$ .
-
-Las conclusiones del estudio son:
-
+- Se realizó interpolación por tres métodos, tomando el mejor ajuste **Kriging Universal**.
 - La zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad.
 - Las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca) se encuentran al occidente del departamento.
 
