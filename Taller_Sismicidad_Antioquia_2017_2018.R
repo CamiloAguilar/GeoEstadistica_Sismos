@@ -31,6 +31,7 @@ datossp <- datosdf
 Antioquia = readShapePoly("./ANTIOQUIA/Antioquia.shp")
 xy = SpatialPoints(datosdf[c("Longitud", "Latitud")])	#Puntos de los radares
 
+plot(Antioquia)
 ##################################################################
 ############ 			Análisis gráfico			##############
 ##################################################################
@@ -39,6 +40,9 @@ xy = SpatialPoints(datosdf[c("Longitud", "Latitud")])	#Puntos de los radares
 plot(Antioquia)
 points(xy, pch = 3, cex = 0.3, col = "red")
 title(main="Sismicidad Diaria en Antioquia 2017-2018 (Escala de Magnitud Local)")
+
+
+
 
 #Análisis descriptivo para la Escala de Magnitud Local
 par(mfrow = c(1, 3))
@@ -90,20 +94,10 @@ summary(step(modelo1))
 
 # ES ESTACIONARIO
 
-
-# Gráficos contra las direcciones para los residuales
-# En los graficos de dispersi?n no se oberva tendencia alguna
-# Lo que indica estacionariedad en los datos analizados 
-scatterplot(modelo2$res~Longitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots=FALSE, span=0.5, data=datosdf)
-scatterplot(modelo2$res~Latitud, reg.line=lm, smooth=TRUE, spread=TRUE, boxplots=FALSE, span=0.5, data=datosdf)
-# se observa  valores atipicos, es posible controlar con Dummy 
-
-
 #*******************************************************
 # 3. Modelo a sentimiento		####
 #*******************************************************
 
-# Se construye el semivariograma sobre los residuales del modelo ajustado 2
 datos2 <- data.frame(Longitud = datosdf$Longitud, Latitud = datosdf$Latitud, res = datosdf$Magnitud.Ml)
 
 # Objeto de tipo geodata para el calculo del semivariograma
@@ -189,7 +183,6 @@ legend("bottomright",legend = c("MCO", "MCP - npairs", "MCP - cressie"),
 cruzada1=xvalid(geo,model=mod1,reestimate = F)
 cruzada2=xvalid(geo,model=mod2,reestimate = F)
 cruzada3=xvalid(geo,model=mod3,reestimate = F)
-
 sqrt(mean(cruzada1$error^2))
 sqrt(mean(cruzada2$error^2))
 sqrt(mean(cruzada3$error^2))
@@ -235,12 +228,13 @@ head(krig_u$var1.pred)
 head(krig_u$var1.var)
 
 #Mapa para la Magnitud Local
+
 spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", 
        contour = T, labels = T, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
 
 #Con algunas opciones distintas
 spplot(krig_u, c("var1.pred"), main = "Kriging Universal para la Magnitud Local", contour = FALSE, labels = FALSE, pretty = F, col = "black", col.regions = terrain.colors(100))
-spplot(krig_u, c("var1.var"), main = "Mapa para las varianzas de predicción", contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
+spplot(krig_u, c("var1.var"), main = "Mapa para las varianzas de Magnitud Local", contour = FALSE, labels = FALSE, pretty = TRUE, col = "black", col.regions = terrain.colors(100))
 #mapa para las varaiznas de predicci?n 
 
 #Para visualizar los puntos de las estaciones
