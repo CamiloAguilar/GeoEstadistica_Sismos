@@ -9,7 +9,7 @@ output: html_document
 ##### Realizado por:
 
 - **Nestor Jardany Serrano Rojas** <https://github.com/jardanys/GeoEstadistica_Sismos>
-- **Camilo Alejandro Aguilar Laverde** <https://github.com/CamiloAguilar/Estadistica_Espacial>
+- **Camilo Alejandro Aguilar Laverde** <https://github.com/CamiloAguilar/GeoEstadistica_Sismos>
 - **Alvaro Enrique Villaba Mendez** <alvarovillalba@usantotomas.edu.co>
 
 ```{r setup, include=FALSE}
@@ -21,15 +21,17 @@ writeLines(c(msj,"<p>Copyright &copy; All rights reserved.</p>"),fileConn)
 close(fileConn)
 ```
 
-El objetivo del estudio es estimar y predecir la actividad sísmica de la magnitud local en la escala de Richter. Los  rangos espaciales donde puede haber movimientos sismicos dependiendo de la escala de medición. 
+<br><br>
 
-Se utilizó un análisis geoestadítico por medio de 3 métodos **Kriging Universal**, **Kriging Ordinario** y **Inverso de la distancia**. El método con mejor ajuste es el Kriging Universal porque la varianza no genera islas en el mapa y es menor a los anteriores métodos. Para esto se utilizó la siguiente metodología:
+El *objetivo* del presente estudio consiste en utilizar información histórica sobre la actividad sísmica en el departamento de Antioquia en Colombia, para  estimar por rangos, la posible intensidad actividad sísmica en las zonas donde no se presentaron movimientos.  
+
+Para ello se aplicraron 3 diferentes métodos de análisis geoestadítico; **Kriging Universal**, **Kriging Ordinario** y **Inverso de la distancia**. El método que representó un mayor ajuste respecto a las mediciones utilizadas fué el Kriging Universal, puesto que el resultado respecto a la varianza no generan islas en el mapa y además resulta inferior frente a los demás métodos. En general, durante el presente trabajo se presenta la siguiente metodología:
 
 - Se observaron descriptivamente los datos.
 - Se comprobo estacionariedad. La magnitud local en escala de Richter presenta estacionariedad en los datos y no fue necesario modelar tendencia. La media es constante sobre la región de observación.
 - Se modelo la dependencia espacial de la varianza por medio de un modelo exponencial y con los parámetros de pepita, semita y rango, expuestos en el estudio.
 - Se utilizó validación cruzada para determinar el mejor modelo de la varianza. Un modelo de mínimos cuadrados generalizados.
-- Se realizó interpolación por tres métodos, tomando el mejor ajuste $Kriging Universal$ .
+- Se realizó interpolación por tres métodos, tomando el mejor ajuste **Kriging Universal**.
 
 Las conclusiones del estudio son:
 
@@ -39,7 +41,7 @@ Las conclusiones del estudio son:
 
 ## Descripción de los datos
 
-La información utilizada en el siguiente documento se toma de Red Sismológica Nacional de Colombia <http://200.119.88.135/RSNC/>, especificamente del BOLETÍN PRELIMINAR DE EVENTO SÍSMICO. Los datos usados son para el departamento de Antioquia, toda la actividad sismica en Junio de 2017. (123 observaciones, en la siguiente tabla se observan las primeras 6 observaciones).
+La información utilizada en el siguiente documento se toma de [Red Sismológica Nacional de Colombia](http://200.119.88.135/RSNC/), especificamente del BOLETÍN PRELIMINAR DE EVENTO SÍSMICO. Dichos datos contienen toda la actividad sísmica del departamento de Antioquia, durante el mes de Junio de 2017 y en total dicha información contiene 123 observaciones. La siguiente tabla contiene una muestra con las primeras 6 observaciones:
 
 ```{r datos, echo=F, message=FALSE, warning=FALSE}
 load("./.RData")
@@ -61,7 +63,7 @@ kable(head(datosdf[,2:6]), "html") %>%
 
 ```
 
-A continuación se muestran una descripción de los datos, aparentemente los datos no se diferencian mucho de una distribución normal y se decide continuar sin transformar los archivos. Si se desea normalizar los datos se pueden transformar con alguna función matemática.
+A continuación se muestra un análisis descriptivo de los datos, los cuales muestran visualmente un comportamiento que sigue una distribución normal, por lo que se ha decidido continuar sin transformar los archivos.
 
 ```{r explorer, echo=T, message=FALSE, warning=FALSE}
 
@@ -75,8 +77,9 @@ title(main=list("Gráficos descriptivos Sismicidad (Escala de Magnitud Local)",c
 
 ```
 
+<br>
 
-El siguiente mapa espacial muestra la actividad sismica en el departamento de Antioquia, Colombia. La zona occidental muestra una mayor actividad, en la zona centro la actividad es casi nula. La magnitud más fuerte es de 3.5 en la escala de Ricther en el mes de Junio de 2017.
+El siguiente mapa espacial muestra la actividad sismica en el departamento de Antioquia. Se observa que la zona occidental presenta una mayor actividad frente a la zona centro, donde la actividad es casi nula. La magnitud más fuerte es de $3.5$ en la escala de Ricther, la cual se presentó en el municipio de *Taraza* el día 13 de junio, a una profundidad de $42.5$ Km.
 
 ```{r georrefe, echo=F, message=FALSE, warning=FALSE}
 
@@ -102,10 +105,11 @@ map %>% addProviderTiles(providers$OpenStreetMap) %>% addPolygons(data=Antioquia
 
 ```
 
+<br>
 
 ## Análisis de Estacionariedad
 
-Se realizan los gráficos de la variable **Magnitud en escala de Richter** contra las direcciones (Longitud, Latitud). Se observan con cierta estacionariedad y sin tendencia significativa. En los gráficos la media de la maginitud local es constante sobre la región de observación, por tanto no es necesario remover esta dependencia.
+Se realizan los gráficos de la variable **Magnitud en escala de Richter** contra las direcciones (Longitud, Latitud). Se observan con cierta estacionariedad y sin tendencia significativa. En los gráficos la media de la maginitud local es constante sobre la región de observación, por tanto no resulta necesario remover alguna dependencia.
 
 ```{r explorer2, echo=T, message=FALSE, warning=FALSE}
 
