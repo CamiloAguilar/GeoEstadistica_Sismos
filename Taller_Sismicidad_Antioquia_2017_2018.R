@@ -19,7 +19,7 @@ library(dplyr)
 #Directorio de trabajo
 
 #setwd("D:/Documents/MEA/ESTADISTICA ESPACIAL/TALLER/Sismicidad/2017")
-datosdf = read.table("RNSC_Antioquia_2017_2018.txt", sep = "\t", dec = ",", header = T)
+datosdf = read.table("./data/RNSC_Antioquia_2017_2018.txt", sep = "\t", dec = ",", header = T)
 datosdf$periodo <- as.Date(datosdf$Fecha, "%d/%m/%Y")
 datosdf$anio <- format(datosdf$periodo, "%Y")
 datosdf$mes <- format(datosdf$periodo, "%m")
@@ -28,7 +28,7 @@ datosdf <- datosdf %>% filter(mes=="06")
 datossp <- datosdf
 
 #Importación de la capa geográfica a R.
-Antioquia = readShapePoly("./ANTIOQUIA/Antioquia.shp")
+Antioquia = readShapePoly("./maps/Antioquia.shp")
 xy = SpatialPoints(datosdf[c("Longitud", "Latitud")])	#Puntos de los radares
 
 plot(Antioquia)
@@ -39,7 +39,7 @@ plot(Antioquia)
 #Gráfico de la capa y los sismos 
 plot(Antioquia)
 points(xy, pch = 3, cex = 0.3, col = "red")
-title(main="Sismicidad Diaria en Antioquia 2017-2018 (Escala de Magnitud Local)")
+title(main="Sismicidad Diaria en Antioquia 2017-Junio \n (Escala de Magnitud Local)")
 
 
 
@@ -50,7 +50,7 @@ hist(datosdf$Magnitud.Ml, freq = FALSE, main = "", xlab = "Magnitud.Ml", ylab = 
 curve(dnorm(x, mean(datosdf$Magnitud.Ml), sd(datosdf$Magnitud.Ml)), add = T)
 boxplot(datosdf$Magnitud.Ml)
 qqPlot(datosdf$Magnitud.Ml, ylab = "Magnitud Local")
-title(main=list("Graficos descriptivos Sismicidad Diaria en Antioquia 2017-2018 (Escala de Magnitud Local)", 
+title(main=list("Graficos descriptivos Sismicidad Diaria en Antioquia 2017-Junio", 
                 cex=2,col="black", font=3), outer=T,line=-2)
 par(mfrow = c(1, 1))
 
@@ -149,7 +149,7 @@ ev
 #Estimacion del modelo de semivarianza
 #Asignando valores iniciales
 
-mod1=variofit(var,ini=ev,weights="equal")
+mod1=variofit(var, ini=ev,weights="equal")
 mod1
 
 #Minimos cuadrados ponderados
