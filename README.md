@@ -7,15 +7,6 @@
 - **Camilo Alejandro Aguilar Laverde**, [GitHub](https://github.com/CamiloAguilar/GeoEstadistica_Sismos)
 - **Alvaro Enrique Villaba Mendez**, [mail](alvarovillalba@usantotomas.edu.co)
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(message = FALSE, warning = FALSE)
-info.date<-format(Sys.time(), "%Y-%m")
-fileConn<-file("footer2.html")
-msj<-paste("<p>", info.date, "Realizado por: Camilo Aguilar - Nestor Serrano - Alvaro VIllalba</p>")
-writeLines(c(msj,"<p>Copyright &copy; All rights reserved.</p>"),fileConn)
-close(fileConn)
-```
-
 <br><br>
 
 ## Introducción
