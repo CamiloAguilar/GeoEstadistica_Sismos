@@ -16,10 +16,10 @@ El *objetivo* del presente estudio consiste en utilizar información histórica 
 Para ello se aplicraron 3 diferentes métodos de análisis geoestadítico; **Kriging Universal**, **Kriging Ordinario** y **Inverso de la distancia**. El método que representó un mayor ajuste respecto a las mediciones utilizadas fué el Kriging Universal, puesto que el resultado respecto a la varianza no generan islas en el mapa y además resulta inferior frente a los demás métodos. En general, durante el presente trabajo se presenta la siguiente metodología:
 
 - Se observaron descriptivamente los datos.
-- Se comprobo estacionariedad. La magnitud local en escala de Richter presenta estacionariedad en los datos y no fue necesario modelar tendencia. La media es constante sobre la región de observación.
-- Se modelo la dependencia espacial de la varianza por medio de un modelo exponencial y con los parámetros de pepita, semita y rango, expuestos en el estudio.
-- Se utilizó validación cruzada para determinar el mejor modelo de la varianza. Un modelo de mínimos cuadrados generalizados.
-- Se realizó interpolación por tres métodos, tomando el mejor ajuste **Kriging Universal**.
+- Se comprueba estacionariedad.
+- Se modela la dependencia espacial de la varianza por medio de un modelo exponencial.
+- Se utiliza validación cruzada para determinar el mejor modelo de la varianza.
+- Se realiza interpolación por tres métodos.
 
 Las conclusiones del estudio son:
 
