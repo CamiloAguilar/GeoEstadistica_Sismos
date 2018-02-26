@@ -9,7 +9,7 @@ output: html_document
 
 - **Nestor Jardany Serrano Rojas**, [GitHub](https://github.com/jardanys/GeoEstadistica_Sismos)
 - **Camilo Alejandro Aguilar Laverde**, [GitHub](https://github.com/CamiloAguilar/GeoEstadistica_Sismos)
-- **Alvaro Enrique Villaba Mendez**, [mail](alvarovillalba@usantotomas.edu.co)
+- **Alvaro Enrique Villaba Mendez**, [GitHub](https://github.com/AlvaroVillalba/GeoEstadistica_Sismos)
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
@@ -30,15 +30,10 @@ Para ello se aplicraron 3 diferentes métodos de análisis geoestadítico; **Kri
 
 - Se observaron descriptivamente los datos.
 - Se comprobo estacionariedad. La magnitud local en escala de Richter presenta estacionariedad en los datos y no fue necesario modelar tendencia. La media es constante sobre la región de observación.
-- Se modelo la dependencia espacial de la varianza por medio de un modelo exponencial y con los parámetros de pepita, semita y rango, expuestos en el estudio.
-- Se utilizó validación cruzada para determinar el mejor modelo de la varianza. Un modelo de mínimos cuadrados generalizados.
-- Se realizó interpolación por tres métodos, tomando el mejor ajuste **Kriging Universal**.
+- Se modela la dependencia espacial de la varianza por medio de un modelo exponencial.
+- Se utiliza validación cruzada para determinar el mejor modelo de la varianza. Un modelo de mínimos cuadrados generalizados.
+- Se realiza interpolación por tres métodos.
 
-Las conclusiones del estudio son:
-
-- La zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad.
-- Las zonas con mayor posibilidad sismita de acuerdo a la magnitud en la escala de Richter (actividad sismitca) se encuentran al occidente del departamento.
-- La varianza no es muy alta y no presenta islas, la zona sur occidental de departamento es más propenso a tener actividad sismica con mayor nivel de magnitud y la zona sur oriental es la de menor actividad. La varianza no es muy alta mayor parte del territorio Antioqueño.
 
 ## Descripción de los datos
 

@@ -5,7 +5,7 @@
 
 - **Nestor Jardany Serrano Rojas**, [GitHub](https://github.com/jardanys/GeoEstadistica_Sismos)
 - **Camilo Alejandro Aguilar Laverde**, [GitHub](https://github.com/CamiloAguilar/GeoEstadistica_Sismos)
-- **Alvaro Enrique Villaba Mendez**, [mail](alvarovillalba@usantotomas.edu.co)
+- **Alvaro Enrique Villaba Mendez**, [GitHub](https://github.com/AlvaroVillalba/GeoEstadistica_Sismos)
 
 <br><br>
 
